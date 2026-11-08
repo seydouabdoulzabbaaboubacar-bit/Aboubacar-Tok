@@ -1,0 +1,45 @@
+name: Construire Aboubacar Tok APK
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '*.zip'
+      - '.github/workflows/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Télécharger le projet
+        uses: actions/checkout@v4
+
+      - name: Installer Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Installer Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Extraire le projet
+        run: |
+          mkdir projet
+          unzip -q *.zip -d projet
+          find projet -name settings.gradle.kts
+
+      - name: Construire APK
+        run: |
+          DOSSIER=$(dirname "$(find projet -name settings.gradle.kts -print -quit)")
+          cd "$DOSSIER"
+          gradle assembleDebug
+
+      - name: Récupérer APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Aboubacar-Tok-APK
+          path: '**/build/outputs/apk/debug/*.apk'
